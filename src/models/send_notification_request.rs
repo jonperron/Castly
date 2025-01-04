@@ -7,6 +7,7 @@ use crate::providers::errors::ProviderError;
 #[serde(rename_all = "snake_case")]
 pub enum NotificationType {
     MailMailgun, // Mailgun for email notifications
+    MailMailjet, // Mailjet for email notifications
     #[serde(other)] // Handle unknown notification types
     Unknown,
 }
@@ -25,6 +26,7 @@ impl SendNotificationRequest {
     pub fn validate(&self) -> Result<(), ProviderError> {
         match self.notification_type {
             NotificationType::MailMailgun => Ok(()), // Accept mailgun for email notifications
+            NotificationType::MailMailjet => Ok(()), // Accept mailjet for email notifications
             _ => Err(ProviderError::invalid_config(
                 "Notification type is not supported".to_string(),
             )),
