@@ -126,4 +126,15 @@ mod tests {
 
         assert!(rendered.is_err());
     }
+
+    #[test]
+    fn test_render_template_missing_value_in_data() {
+        let engine = create_dummy_template();
+        let template = engine.load("template.txt").unwrap();
+
+        let data = json!({"age": 30 }); // "age" not defined in template
+        let rendered = template.render(data);
+
+        assert!(rendered.is_err());
+    }
 }
