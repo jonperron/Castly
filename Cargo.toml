@@ -5,32 +5,31 @@ edition = "2021"
 
 [dependencies]
 # Error handling
-thiserror = "2.0.9"
+thiserror = "2.0"
 
 # API
-axum = "0.8.1"
-hyper = { version = "1.5.2", features = ["full"] }
-serde = { version = "1.0.217", features = ["derive"] }
-serde_json = "1.0.134"
+axum = "0.8"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 
 # Asynchronous tasks
-async-trait = "0.1.83"
-tokio = { version = "1", features = ["full"] }
+tokio = { version = "1.42", features = ["full"] }
 
 # Config from yaml or configmap
-config = "0.15.4"
+config = "0.15"
 serde_yaml = "0.9.34+deprecated"
 
 # HTTP calls
-reqwest = "0.12.12"
+reqwest = "0.12"
 
 # Logging
-tracing = "0.1.41"
+tracing = "0.1"
 tracing-subscriber = "0.3"
 
 # Template
-tera = "1.0.0"
+tera = "1.0"
 
+[dev-dependencies]
 # Testing
-tokio-test = "0.4.0"
-tempfile = "3.14.0"
+tokio-test = "0.4"
+tempfile = "3.15"

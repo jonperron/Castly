@@ -13,7 +13,7 @@ use axum::{routing::get, Router};
 use tracing::{info, Level};
 use tracing_subscriber;
 
-use crate::api::send_router;
+use crate::api::{send_router, AppState};
 use crate::config::Config;
 use crate::providers::MailgunProvider;
 use crate::templates_engines::tera_engine::TemplateEngine;
@@ -47,13 +47,14 @@ async fn main() {
             .expect("Mailgun config is missing"),
     ));
 
-    let app = send_router(template_engine, mailgun_provider)
-        .merge(Router::new().route("/health", get(health_handler)));
+    let state = AppState {
+        template_engine,
+        mailgun_provider,
+    };
+
+    let app = send_router(state).merge(Router::new().route("/health", get(health_handler)));
 
     let addr: SocketAddr = format!("0.0.0.0:{}", config.service.port).parse().unwrap();
-    if config.service.environment == "development" {
-        println!("Listening on http://{}", addr);
-    }
 
     let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
 
