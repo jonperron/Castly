@@ -6,7 +6,6 @@ use std::path::Path;
 #[derive(Debug, Deserialize)]
 pub struct ServiceConfig {
     pub name: String,
-    pub environment: String,
     pub port: u16,
 }
 
@@ -57,7 +56,6 @@ mod tests {
         let config_content = r#"
         service:
           name: "test_service"
-          environment: "development"
           port: 8080
         templates:
           path: "/templates"
@@ -74,7 +72,6 @@ mod tests {
 
         let config = Config::load_from_file(config_path).unwrap();
         assert_eq!(config.service.name, "test_service");
-        assert_eq!(config.service.environment, "development");
         assert_eq!(config.service.port, 8080);
         assert_eq!(config.templates.path, "/templates");
         assert_eq!(config.templates.default_language, "en");

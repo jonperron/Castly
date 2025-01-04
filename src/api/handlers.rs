@@ -1,11 +1,23 @@
-use axum::{extract::Json, http::StatusCode, response::IntoResponse, routing::post};
+use axum::{
+    extract::{Json, State},
+    http::StatusCode,
+    response::IntoResponse,
+    routing::post,
+    Router,
+};
 use serde_json::json;
 use std::sync::Arc;
 
-use crate::models::{EmailNotification, SendNotificationRequest};
+use crate::models::{EmailNotification, NotificationType, SendNotificationRequest};
 
 use crate::providers::{errors::ProviderError, EmailProvider, MailgunProvider};
 use crate::templates_engines::TemplateEngine;
+
+#[derive(Clone)]
+pub struct AppState {
+    pub template_engine: Arc<TemplateEngine>,
+    pub mailgun_provider: Arc<MailgunProvider>,
+}
 
 pub fn create_email_notification(
     request: &SendNotificationRequest,
@@ -34,9 +46,8 @@ pub fn create_email_notification(
 }
 
 pub async fn send_notification(
+    State(state): State<AppState>,
     Json(request): Json<SendNotificationRequest>,
-    template_engine: Arc<TemplateEngine>,
-    mailgun_provider: Arc<MailgunProvider>,
 ) -> impl IntoResponse {
     // Validate the request
     if let Err(e) = request.validate() {
@@ -47,17 +58,19 @@ pub async fn send_notification(
     }
 
     // Create notification regarding type
-    let notification = match request.notification_type.as_str() {
-        "email" => create_email_notification(&request, &template_engine),
+    let notification = match request.notification_type {
+        NotificationType::MailMailgun => {
+            create_email_notification(&request, &state.template_engine)
+        }
         _ => Err(ProviderError::invalid_config(
             "Unsupported notification type",
         )),
     };
 
     // Find provider based on notification type and provider provided
-    let provider_result = match request.provider.as_str() {
-        "mailgun" => match notification {
-            Ok(n) => mailgun_provider.send(n).await,
+    let provider_result = match request.notification_type {
+        NotificationType::MailMailgun => match notification {
+            Ok(n) => state.mailgun_provider.send(n).await,
             Err(e) => Err(e),
         },
         _ => Err(ProviderError::invalid_config("Unsupported provider")),
@@ -76,16 +89,8 @@ pub async fn send_notification(
     }
 }
 
-pub fn send_router(
-    template_engine: Arc<TemplateEngine>,
-    mailgun_provider: Arc<MailgunProvider>,
-) -> axum::Router {
-    axum::Router::new().route(
-        "/send",
-        post({
-            let template_engine = template_engine.clone();
-            let mailgun_provider = mailgun_provider.clone();
-            move |req| send_notification(req, template_engine.clone(), mailgun_provider.clone())
-        }),
-    )
+pub fn send_router(state: AppState) -> axum::Router {
+    Router::new()
+        .route("/send", post(send_notification))
+        .with_state(state)
 }

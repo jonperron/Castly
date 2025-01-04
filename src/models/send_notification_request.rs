@@ -4,24 +4,30 @@ use serde_json::Value;
 use crate::providers::errors::ProviderError;
 
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum NotificationType {
+    MailMailgun, // Mailgun for email notifications
+    #[serde(other)] // Handle unknown notification types
+    Unknown,
+}
+
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
 pub struct SendNotificationRequest {
     pub to: String,
     pub from: String,
     pub subject: String,
     pub template_name: String,
     pub context: Value,
-    pub notification_type: String,
-    pub provider: String,
+    pub notification_type: NotificationType,
 }
 
 impl SendNotificationRequest {
     pub fn validate(&self) -> Result<(), ProviderError> {
-        match (self.provider.as_str(), self.notification_type.as_str()) {
-            ("mailgun", "email") => Ok(()), // Accept mailgun for email notifications
-            _ => Err(ProviderError::invalid_config(format!(
-                "Invalid configuration: Provider {} is not supported for {} notifications",
-                self.provider, self.notification_type
-            ))),
+        match self.notification_type {
+            NotificationType::MailMailgun => Ok(()), // Accept mailgun for email notifications
+            _ => Err(ProviderError::invalid_config(
+                "Notification type is not supported".to_string(),
+            )),
         }
     }
 }
@@ -39,8 +45,7 @@ mod tests {
             subject: "Test subject".to_string(),
             template_name: "hello_world.html".to_string(),
             context: serde_json::json!({"foo": "bar"}),
-            notification_type: "email".to_string(),
-            provider: "test".to_string(),
+            notification_type: NotificationType::MailMailgun,
         };
         let json = serde_json::to_string(&send_notification_request).expect("Serialization failed");
         assert!(json.contains("sender@example.com"));
@@ -56,29 +61,32 @@ mod tests {
 
     #[test]
     fn test_send_notification_request_validation() {
-        // Valid notification type and provider
+        // Valid notification type
         let valid_send_notification_request = SendNotificationRequest {
             to: "receiver@example.com".to_string(),
             from: "sender@example.com".to_string(),
             subject: "Test subject".to_string(),
             template_name: "hello_world.html".to_string(),
             context: serde_json::json!({"foo": "bar"}),
-            notification_type: "email".to_string(),
-            provider: "mailgun".to_string(),
+            notification_type: NotificationType::MailMailgun,
         };
 
         assert!(valid_send_notification_request.validate().is_ok());
 
-        // Invalid provider
-        let invalid_send_notification_request = SendNotificationRequest {
-            to: "receiver@example.com".to_string(),
-            from: "sender@example.com".to_string(),
-            subject: "Test subject".to_string(),
-            template_name: "hello_world.html".to_string(),
-            context: serde_json::json!({"foo": "bar"}),
-            notification_type: "email".to_string(),
-            provider: "test".to_string(),
-        };
+        // Invalid notification type
+        let invalid_send_notification_request_json = r#"
+        {
+            "to": "receiver@example.com",
+            "from": "sender@example.com",
+            "subject": "Test subject",
+            "template_name": "hello_world.html",
+            "context": {"foo": "bar"},
+            "notification_type": "buzz"
+        }"#;
+
+        let invalid_send_notification_request: SendNotificationRequest =
+            serde_json::from_str(invalid_send_notification_request_json)
+                .expect("Deserialization failed");
 
         assert!(invalid_send_notification_request.validate().is_err());
     }

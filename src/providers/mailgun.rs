@@ -1,4 +1,3 @@
-use async_trait::async_trait;
 use reqwest::Client;
 
 use crate::config::MailgunConfig;
@@ -57,7 +56,6 @@ impl MailgunProvider {
     }
 }
 
-#[async_trait]
 impl EmailProvider for MailgunProvider {
     async fn send(&self, notification: EmailNotification) -> Result<(), ProviderError> {
         self.send_email(&notification).await
