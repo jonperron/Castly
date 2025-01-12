@@ -8,25 +8,29 @@ use crate::providers::providers::EmailProvider;
 pub struct MailgunProvider {
     config: MailgunConfig,
     client: Client,
+    url: String,
 }
 
 impl MailgunProvider {
     pub fn new(config: MailgunConfig) -> Self {
         let client = Client::new();
-        Self { config, client }
+        let url = format!(
+            "{}/v3/{}/messages",
+            config
+                .base_url
+                .clone()
+                .unwrap_or_else(|| "https://api.mailgun.net".to_string()),
+            config.domain
+        );
+        Self {
+            config,
+            client,
+            url,
+        }
     }
 
     // Send notification to Mailgun API
     async fn send_email(&self, notification: &EmailNotification) -> Result<(), ProviderError> {
-        let url = format!(
-            "{}/v3/{}/messages",
-            self.config
-                .base_url
-                .clone()
-                .unwrap_or_else(|| "https://api.mailgun.net".to_string()),
-            self.config.domain
-        );
-
         let params = [
             ("from", &notification.from),
             ("to", &notification.to),
@@ -36,7 +40,7 @@ impl MailgunProvider {
 
         let response = self
             .client
-            .post(&url)
+            .post(&self.url)
             .basic_auth("api", Some(&self.config.api_key))
             .form(&params)
             .send()

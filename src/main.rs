@@ -15,7 +15,7 @@ use tracing_subscriber;
 
 use crate::api::{send_router, AppState};
 use crate::config::Config;
-use crate::providers::MailgunProvider;
+use crate::providers::{MailgunProvider, MailjetProvider};
 use crate::templates_engines::tera_engine::TemplateEngine;
 use crate::tools::health_handler;
 
@@ -39,17 +39,22 @@ async fn main() {
         panic!("No provider is configured, please check your config file");
     }
 
-    let mailgun_provider = Arc::new(MailgunProvider::new(
-        config
-            .providers
-            .mailgun
-            .clone()
-            .expect("Mailgun config is missing"),
-    ));
+    let mailgun_provider = if let Some(mailgun_config) = &config.providers.mailgun {
+        Some(Arc::new(MailgunProvider::new(mailgun_config.clone())))
+    } else {
+        None
+    };
+
+    let mailjet_provider = if let Some(mailjet_config) = &config.providers.mailjet {
+        Some(Arc::new(MailjetProvider::new(mailjet_config.clone())))
+    } else {
+        None
+    };
 
     let state = AppState {
         template_engine,
         mailgun_provider,
+        mailjet_provider,
     };
 
     let app = send_router(state).merge(Router::new().route("/health", get(health_handler)));

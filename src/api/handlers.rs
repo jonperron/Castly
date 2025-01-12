@@ -9,14 +9,14 @@ use serde_json::json;
 use std::sync::Arc;
 
 use crate::models::{EmailNotification, NotificationType, SendNotificationRequest};
-
-use crate::providers::{errors::ProviderError, EmailProvider, MailgunProvider};
+use crate::providers::{errors::ProviderError, EmailProvider, MailgunProvider, MailjetProvider};
 use crate::templates_engines::TemplateEngine;
 
 #[derive(Clone)]
 pub struct AppState {
     pub template_engine: Arc<TemplateEngine>,
-    pub mailgun_provider: Arc<MailgunProvider>,
+    pub mailgun_provider: Option<Arc<MailgunProvider>>,
+    pub mailjet_provider: Option<Arc<MailjetProvider>>,
 }
 
 pub fn create_email_notification(
@@ -62,6 +62,9 @@ pub async fn send_notification(
         NotificationType::MailMailgun => {
             create_email_notification(&request, &state.template_engine)
         }
+        NotificationType::MailMailjet => {
+            create_email_notification(&request, &state.template_engine)
+        }
         _ => Err(ProviderError::invalid_config(
             "Unsupported notification type",
         )),
@@ -70,7 +73,27 @@ pub async fn send_notification(
     // Find provider based on notification type and provider provided
     let provider_result = match request.notification_type {
         NotificationType::MailMailgun => match notification {
-            Ok(n) => state.mailgun_provider.send(n).await,
+            Ok(n) => {
+                if let Some(provider) = state.mailgun_provider.as_ref() {
+                    provider.send(n).await
+                } else {
+                    Err(ProviderError::invalid_config(
+                        "Mailgun provider not configured",
+                    ))
+                }
+            }
+            Err(e) => Err(e),
+        },
+        NotificationType::MailMailjet => match notification {
+            Ok(n) => {
+                if let Some(provider) = state.mailjet_provider.as_ref() {
+                    provider.send(n).await
+                } else {
+                    Err(ProviderError::invalid_config(
+                        "Mailjet provider not configured",
+                    ))
+                }
+            }
             Err(e) => Err(e),
         },
         _ => Err(ProviderError::invalid_config("Unsupported provider")),

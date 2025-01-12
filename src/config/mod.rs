@@ -33,6 +33,7 @@ impl Config {
 #[derive(Debug, Deserialize)]
 pub struct ProvidersConfig {
     pub mailgun: Option<MailgunConfig>,
+    pub mailjet: Option<MailjetConfig>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -42,9 +43,16 @@ pub struct MailgunConfig {
     pub base_url: Option<String>,
 }
 
+#[derive(Debug, Deserialize, Clone)]
+pub struct MailjetConfig {
+    pub api_key: String,
+    pub api_secret: String,
+    pub v31: bool,
+}
+
 impl ProvidersConfig {
     pub fn is_empty(&self) -> bool {
-        self.mailgun.is_none()
+        self.mailgun.is_none() && self.mailjet.is_none()
     }
 }
 #[cfg(test)]
@@ -82,7 +90,10 @@ mod tests {
 
     #[test]
     fn test_providers_config_is_empty() {
-        let providers_config = ProvidersConfig { mailgun: None };
+        let providers_config = ProvidersConfig {
+            mailgun: None,
+            mailjet: None,
+        };
         assert!(providers_config.is_empty());
 
         let mailgun_config = MailgunConfig {
@@ -92,6 +103,7 @@ mod tests {
         };
         let providers_config = ProvidersConfig {
             mailgun: Some(mailgun_config),
+            mailjet: None,
         };
         assert!(!providers_config.is_empty());
     }
