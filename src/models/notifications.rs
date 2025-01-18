@@ -6,6 +6,7 @@ pub struct EmailNotification {
     pub to: String,
     pub subject: String,
     pub body: String,
+    pub is_raw_text: bool,
 }
 
 #[cfg(test)]
@@ -20,6 +21,7 @@ mod tests {
             to: "receiver@example.com".to_string(),
             subject: "Test email".to_string(),
             body: "This is a test email".to_string(),
+            is_raw_text: true,
         };
 
         let json = serde_json::to_string(&email_notification).expect("Serialization failed");

@@ -8,60 +8,78 @@ use super::{errors::ProviderError, EmailProvider};
 pub struct MailjetProvider {
     config: MailjetConfig,
     client: Client,
-    url: String,
+    urls: MailjeSendUrls,
 }
 
+pub struct MailjeSendUrls {
+    pub url_v31: String,
+    pub url_v3: String,
+}
+
+impl Default for MailjeSendUrls {
+    fn default() -> Self {
+        Self {
+            url_v31: "https://api.mailjet.com/v3.1/send".to_string(),
+            url_v3: "https://api.mailjet.com/v3/send".to_string(),
+        }
+    }
+}
 impl MailjetProvider {
     pub fn new(config: MailjetConfig) -> Self {
         let client = Client::new();
-        let url = if config.v31 {
-            "https://api.mailjet.com/v3.1/send".to_string()
-        } else {
-            "https://api.mailjet.com/v3/send".to_string()
-        };
+        let urls: MailjeSendUrls = Default::default();
         Self {
             config,
             client,
-            url,
+            urls,
         }
     }
 
     async fn send_email(&self, notifications: &EmailNotification) -> Result<(), ProviderError> {
         let payload = if self.config.v31 {
-            serde_json::json!({
-                "Messages": [
-                    {
-                        "From": {
-                            "Email": &notifications.from
-                        },
-                        "To": [
-                            {
-                                "Email": &notifications.to
-                            }
-                        ],
-                        "Subject": &notifications.subject,
-                        "HTMLPart": &notifications.body
-                    }
-                ]
-            })
+            let message = if notifications.is_raw_text {
+                serde_json::json!({
+                    "From": { "Email": &notifications.from },
+                    "To": [{ "Email": &notifications.to }],
+                    "Subject": &notifications.subject,
+                    "TextPart": &notifications.body,
+                })
+            } else {
+                serde_json::json!({
+                    "From": { "Email": &notifications.from },
+                    "To": [{ "Email": &notifications.to }],
+                    "Subject": &notifications.subject,
+                    "HTMLPart": &notifications.body,
+                })
+            };
+            serde_json::json!({ "Messages": [message] })
         } else {
-            serde_json::json!({
-                "FromEmail": &notifications.from,
-                "Subject": &notifications.subject,
-                "Html-part": &notifications.body,
-                "Recipients": [
-                    {
-                        "Email": &notifications.to
-                    }
-                ]
-            })
+            if notifications.is_raw_text {
+                serde_json::json!({
+                    "FromEmail": &notifications.from,
+                    "Subject": &notifications.subject,
+                    "Text-part": &notifications.body,
+                    "Recipients": [{ "Email": &notifications.to }]
+                })
+            } else {
+                serde_json::json!({
+                    "FromEmail": &notifications.from,
+                    "Subject": &notifications.subject,
+                    "Html-part": &notifications.body,
+                    "Recipients": [{ "Email": &notifications.to }]
+                })
+            }
         };
 
         info!("Sending email with Mailjet: {:?}", payload);
 
         let response = self
             .client
-            .post(&self.url)
+            .post(if self.config.v31 {
+                &self.urls.url_v31
+            } else {
+                &self.urls.url_v3
+            })
             .header("Content-type", "application/json")
             .basic_auth(&self.config.api_key, Some(&self.config.api_secret))
             .json(&payload)
