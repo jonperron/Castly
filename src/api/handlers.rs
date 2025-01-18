@@ -23,18 +23,27 @@ pub fn create_email_notification(
     request: &SendNotificationRequest,
     template_engine: &TemplateEngine,
 ) -> Result<EmailNotification, ProviderError> {
-    // Load the template using the template ID
-    let template = template_engine
-        .load(format!("{}", &request.template_name).as_str())
-        .map_err(|e| {
-            tracing::error!("Failed to load template: {:?}", e);
-            ProviderError::template_error("Template not found")
-        })?;
+    let body = if let Some(template_request) = &request.use_template {
+        // Load the template using the template name
+        let template = template_engine
+            .load(&template_request.template_name)
+            .map_err(|e| {
+                tracing::error!("Failed to load template: {:?}", e);
+                ProviderError::template_error("Template not found")
+            })?;
 
-    // Render the template with the provided data
-    let body = template
-        .render(request.context.clone())
-        .map_err(|_| ProviderError::template_error("Failed to render template"))?;
+        // Render the template with the provided context
+        template
+            .render(template_request.context.clone())
+            .map_err(|_| ProviderError::template_error("Failed to render template"))?
+    } else if let Some(raw_text_request) = &request.use_raw_text {
+        // Use the raw text directly
+        raw_text_request.text.clone()
+    } else {
+        unreachable!(
+            "Either use_template or use_raw_text should always be present due to validation"
+        );
+    };
 
     // Create and return the Notification object
     Ok(EmailNotification {
@@ -42,6 +51,7 @@ pub fn create_email_notification(
         to: request.to.clone(),
         subject: request.subject.clone(),
         body,
+        is_raw_text: request.use_raw_text.is_some(),
     })
 }
 
