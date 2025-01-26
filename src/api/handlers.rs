@@ -19,10 +19,10 @@ pub struct AppState {
     pub mailjet_provider: Option<Arc<MailjetProvider>>,
 }
 
-pub fn create_email_notification(
+pub fn create_email_notifications(
     request: &SendNotificationRequest,
     template_engine: &TemplateEngine,
-) -> Result<EmailNotification, ProviderError> {
+) -> Result<Vec<EmailNotification>, ProviderError> {
     let body = if let Some(template_request) = &request.use_template {
         // Load the template using the template name
         let template = template_engine
@@ -45,14 +45,39 @@ pub fn create_email_notification(
         );
     };
 
-    // Create and return the Notification object
-    Ok(EmailNotification {
-        from: request.from.clone(),
-        to: request.to.clone(),
-        subject: request.subject.clone(),
-        body,
-        is_raw_text: request.use_raw_text.is_some(),
-    })
+    // Create and return the Notification objects
+    let notifications = request
+        .to
+        .iter()
+        .map(|to| EmailNotification {
+            from: request.from.clone(),
+            to: to.clone(),
+            subject: request.subject.clone(),
+            body: body.clone(),
+            is_raw_text: request.use_raw_text.is_some(),
+        })
+        .collect();
+
+    Ok(notifications)
+}
+
+pub async fn send_notifications_with_provider<T: EmailProvider>(
+    provider: Arc<T>,
+    provider_name: &str,
+    notifications: Vec<EmailNotification>,
+) -> Result<(), ProviderError> {
+    for notification in notifications {
+        if let Err(e) = provider.send(notification).await {
+            return Err(ProviderError::provider_error(
+                format!(
+                    "Failed to send notification with {}: {:?}",
+                    provider_name, e
+                )
+                .as_str(),
+            ));
+        }
+    }
+    Ok(())
 }
 
 pub async fn send_notification(
@@ -68,12 +93,12 @@ pub async fn send_notification(
     }
 
     // Create notification regarding type
-    let notification = match request.notification_type {
+    let notifications = match request.notification_type {
         NotificationType::MailMailgun => {
-            create_email_notification(&request, &state.template_engine)
+            create_email_notifications(&request, &state.template_engine)
         }
         NotificationType::MailMailjet => {
-            create_email_notification(&request, &state.template_engine)
+            create_email_notifications(&request, &state.template_engine)
         }
         _ => Err(ProviderError::invalid_config(
             "Unsupported notification type",
@@ -82,30 +107,36 @@ pub async fn send_notification(
 
     // Find provider based on notification type and provider provided
     let provider_result = match request.notification_type {
-        NotificationType::MailMailgun => match notification {
-            Ok(n) => {
-                if let Some(provider) = state.mailgun_provider.as_ref() {
-                    provider.send(n).await
-                } else {
-                    Err(ProviderError::invalid_config(
-                        "Mailgun provider not configured",
-                    ))
+        NotificationType::MailMailgun => {
+            if let Some(mailgun_provider) = state.mailgun_provider.as_ref() {
+                match notifications {
+                    Ok(n) => {
+                        send_notifications_with_provider(mailgun_provider.clone(), "Mailgun", n)
+                            .await
+                    }
+                    Err(e) => Err(e),
                 }
+            } else {
+                Err(ProviderError::invalid_config(
+                    "Mailgun provider not configured",
+                ))
             }
-            Err(e) => Err(e),
-        },
-        NotificationType::MailMailjet => match notification {
-            Ok(n) => {
-                if let Some(provider) = state.mailjet_provider.as_ref() {
-                    provider.send(n).await
-                } else {
-                    Err(ProviderError::invalid_config(
-                        "Mailjet provider not configured",
-                    ))
+        }
+        NotificationType::MailMailjet => {
+            if let Some(mailjet_provider) = state.mailjet_provider.as_ref() {
+                match notifications {
+                    Ok(n) => {
+                        send_notifications_with_provider(mailjet_provider.clone(), "Mailjet", n)
+                            .await
+                    }
+                    Err(e) => Err(e),
                 }
+            } else {
+                Err(ProviderError::invalid_config(
+                    "Mailjet provider not configured",
+                ))
             }
-            Err(e) => Err(e),
-        },
+        }
         _ => Err(ProviderError::invalid_config("Unsupported provider")),
     };
 

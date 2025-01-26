@@ -25,7 +25,7 @@ pub struct UseTemplate {
 
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
 pub struct SendNotificationRequest {
-    pub to: String,
+    pub to: Vec<String>,
     pub from: String,
     pub subject: String,
     #[serde(default)]
@@ -72,7 +72,7 @@ mod tests {
     #[test]
     fn test_send_notification_request_serialization_with_template() {
         let send_notification_request = SendNotificationRequest {
-            to: "receiver@example.com".to_string(),
+            to: vec!["receiver@example.com".to_string()],
             from: "sender@example.com".to_string(),
             subject: "Test subject".to_string(),
             use_raw_text: None,
@@ -97,7 +97,7 @@ mod tests {
     #[test]
     fn test_send_notification_request_serialization_with_raw_text() {
         let send_notification_request = SendNotificationRequest {
-            to: "receiver@example.com".to_string(),
+            to: vec!["receiver@example.com".to_string()],
             from: "sender@example.com".to_string(),
             subject: "Test subject".to_string(),
             use_raw_text: Some(UseRawText {
@@ -122,7 +122,7 @@ mod tests {
     fn test_send_notification_request_validation() {
         // Valid notification type
         let valid_send_notification_request = SendNotificationRequest {
-            to: "receiver@example.com".to_string(),
+            to: vec!["receiver@example.com".to_string()],
             from: "sender@example.com".to_string(),
             subject: "Test subject".to_string(),
             use_raw_text: None,
@@ -138,7 +138,7 @@ mod tests {
         // Invalid notification type
         let invalid_send_notification_request_json = r#"
         {
-            "to": "receiver@example.com",
+            "to": ["receiver@example.com"],
             "from": "sender@example.com",
             "subject": "Test subject",
             "use_raw_text": {
@@ -155,7 +155,7 @@ mod tests {
 
         // Both raw text and template provided
         let invalid_send_notification_request = SendNotificationRequest {
-            to: "receiver@example.com".to_string(),
+            to: vec!["receiver@example.com".to_string()],
             from: "sender@example.com".to_string(),
             subject: "Test subject".to_string(),
             use_raw_text: Some(UseRawText {
