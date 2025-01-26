@@ -16,6 +16,9 @@ pub enum ProviderError {
 
     #[error["Api error: {0}"]]
     ApiError(String),
+
+    #[error["Provider error: {0}"]]
+    ProviderError(String),
 }
 
 impl ProviderError {
@@ -37,5 +40,9 @@ impl ProviderError {
 
     pub fn api_error(details: impl Into<String>) -> Self {
         ProviderError::ApiError(details.into())
+    }
+
+    pub fn provider_error(details: impl Into<String>) -> Self {
+        ProviderError::ProviderError(details.into())
     }
 }
