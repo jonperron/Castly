@@ -66,23 +66,7 @@ Access the API on <http://localhost:3000>.
 
 ## Configuration
 
-See config.yaml:
-
-```yaml
-templates:
-  path: "templates"
-  default_language: "en"
-
-providers:
-  mailgun:
-    domain: "your-mailgun-domain.com"
-    api_key: "your-mailgun-api-key"
-    base_url: "https://api.mailgun.net"
-
-  mailjet:
-    api_key: "your-mailjet-api-key"
-    secret_key: "your-mailjet-secret-key"
-```
+See [CONFIGURATION.md](docs/CONFIGURATION.md) for details. A dummy `config.yaml` file is provided as an example.
 
 ## Monitoring
 
