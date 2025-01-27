@@ -23,7 +23,10 @@ Messenger is a flexible service built in Rust for sending notifications via mult
 
 ## Supported providers
 
-* Email: Mailgun
+| Name    | Type  | Value in request |
+| ------- | ----- | ---------------- |
+| Mailgun | Email | `mail_mailgun`   |
+| Mailjet | Email | `mail_mailjet`   |
 
 ## API Example
 
@@ -37,37 +40,26 @@ Send a notification via API:
 
 ```json
 {
-  "notification_type": "email",
-  "provider": "mailgun",
-  "template_name": "hello_world",
+  "to": ["receiver@example.com"],
   "from": "sender@example.com",
-  "to": "receiver@example.com",
-  "subject": "Hello, World!"
+  "subject": "Hello, World!",
+  "notification_type": "mail_mailgun",
+  "use_raw_text": {
+    "text": "Hello world!",    
+  }
+
 }
 
 ```
 
-* Response:
-
-```json
-{
-    "message":"Notification sent"
-}
-```
+Open API specifications are available [here](docs/open_api_specifications.yml).
 
 ## Running the Service
 
-Build and run the service using cargo:
+Build and run the service:
 
 ```bash
 cargo run
-```
-
-The service is also available via Docker:
-
-```bash
-docker buildx build -t messenger .
-docker run messenger:latest
 ```
 
 Access the API on <http://localhost:3000>.
@@ -86,6 +78,10 @@ providers:
     domain: "your-mailgun-domain.com"
     api_key: "your-mailgun-api-key"
     base_url: "https://api.mailgun.net"
+
+  mailjet:
+    api_key: "your-mailjet-api-key"
+    secret_key: "your-mailjet-secret-key"
 ```
 
 ## Monitoring

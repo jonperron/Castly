@@ -1,0 +1,88 @@
+openapi: 3.0.0
+info:
+  title: Notification Service API
+  version: 1.0.0
+  description: API for sending notifications using various providers.
+servers:
+  - url: http://localhost:8000
+paths:
+  /send:
+    post:
+      summary: Send a notification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                to:
+                  type: array
+                  items:
+                    type: string
+                  example: ["receiver@example.com"]
+                from:
+                  type: string
+                  example: "sender@example.com"
+                subject:
+                  type: string
+                  example: "Hello, World!"
+                notification_type:
+                  type: string
+                  enum: [mail_mailgun, mail_mailjet]
+                  example: "mail_mailgun"
+              required:
+                - to
+                - from
+                - subject
+                - notification_type
+              oneOf:
+                - properties:
+                    use_template:
+                      type: object
+                      properties:
+                        template_name:
+                          type: string
+                          example: "hello_world"
+                        context:
+                          type: object
+                          additionalProperties: true
+                          example: { "foo": "bar" }
+                - properties:
+                    use_raw_text:
+                      type: object
+                      properties:
+                        text:
+                          type: string
+                          example: "This is a raw text message."
+      responses:
+        "200":
+          description: Notification sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Notification sent"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid request payload"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error"
