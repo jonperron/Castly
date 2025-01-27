@@ -17,3 +17,6 @@ Cargo.lock
 # Ignore useless files
 LICENSE
 README.md
+
+# Ignore doc directory
+docs/
