@@ -45,9 +45,8 @@ Send a notification via API:
   "subject": "Hello, World!",
   "notification_type": "mail_mailgun",
   "use_raw_text": {
-    "text": "Hello world!",    
+    "text": "Hello world!"
   }
-
 }
 
 ```
