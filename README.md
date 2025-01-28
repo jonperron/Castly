@@ -1,6 +1,6 @@
-# Messenger
+# Castly
 
-Messenger is a flexible service built in Rust for sending notifications via multiple providers. It supports both synchronous API calls and asynchronous message consumption, allowing seamless integration into modern architectures. The service is designed to be provider-agnostic, configurable, and extensible for various notification types.
+Castly is a flexible service built in Rust for sending notifications via multiple providers. It supports both synchronous API calls and asynchronous message consumption, allowing seamless integration into modern architectures. The service is designed to be provider-agnostic, configurable, and extensible for various notification types.
 
 ##  Features
 
