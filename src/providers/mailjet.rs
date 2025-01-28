@@ -1,9 +1,12 @@
 use reqwest::Client;
 use tracing::info;
 
-use crate::{config::MailjetConfig, models::EmailNotification};
-
-use super::{errors::ProviderError, EmailProvider};
+use crate::{
+    config::MailjetConfig,
+    models::{EmailNotification, Notification},
+    providers::errors::ProviderError,
+    providers::providers::Provider,
+};
 
 pub struct MailjetProvider {
     config: MailjetConfig,
@@ -101,8 +104,13 @@ impl MailjetProvider {
     }
 }
 
-impl EmailProvider for MailjetProvider {
-    async fn send(&self, notification: EmailNotification) -> Result<(), ProviderError> {
-        self.send_email(&notification).await
+impl Provider for MailjetProvider {
+    async fn send(&self, notification: Notification) -> Result<(), ProviderError> {
+        match notification {
+            Notification::Email(ref msg) => self.send_email(msg).await,
+            _ => Err(ProviderError::UnexpectedError(
+                "Invalid notification type".to_string(),
+            )),
+        }
     }
 }

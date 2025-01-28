@@ -1,9 +1,11 @@
 use reqwest::Client;
 
-use crate::config::MailgunConfig;
-use crate::models::EmailNotification;
-use crate::providers::errors::ProviderError;
-use crate::providers::providers::EmailProvider;
+use crate::{
+    config::MailgunConfig,
+    models::{EmailNotification, Notification},
+    providers::errors::ProviderError,
+    providers::providers::Provider,
+};
 
 pub struct MailgunProvider {
     config: MailgunConfig,
@@ -60,8 +62,13 @@ impl MailgunProvider {
     }
 }
 
-impl EmailProvider for MailgunProvider {
-    async fn send(&self, notification: EmailNotification) -> Result<(), ProviderError> {
-        self.send_email(&notification).await
+impl Provider for MailgunProvider {
+    async fn send(&self, notification: Notification) -> Result<(), ProviderError> {
+        match notification {
+            Notification::Email(ref msg) => self.send_email(msg).await,
+            _ => Err(ProviderError::UnexpectedError(
+                "Invalid notification type".to_string(),
+            )),
+        }
     }
 }

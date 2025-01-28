@@ -50,3 +50,15 @@ providers:
     secret_key: "secret-1234567890abcdef"
     v31: true
 ```
+
+### Telegram
+
+The telegram section configures the Telegram service provider
+
+* `bot_token` (required): the bot token for authenticating with Telegram.
+
+```yaml
+providers:
+  telegram:
+    bot_token: "my-bot:1234356ezds"
+```
