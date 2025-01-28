@@ -9,6 +9,17 @@ pub struct EmailNotification {
     pub is_raw_text: bool,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+pub struct MessageNotification {
+    pub recipient: String,
+    pub message: String,
+}
+
+pub enum Notification {
+    Email(EmailNotification),
+    Message(MessageNotification),
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

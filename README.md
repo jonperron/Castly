@@ -23,10 +23,11 @@ Messenger is a flexible service built in Rust for sending notifications via mult
 
 ## Supported providers
 
-| Name    | Type  | Value in request |
-| ------- | ----- | ---------------- |
-| Mailgun | Email | `mail_mailgun`   |
-| Mailjet | Email | `mail_mailjet`   |
+| Name     | Type      | Value in request |
+| -------- | --------- | ---------------- |
+| Mailgun  | Email     | `mail_mailgun`   |
+| Mailjet  | Email     | `mail_mailjet`   |
+| Telegram | Messaging | `telegram`       |
 
 ## API Example
 

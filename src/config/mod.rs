@@ -34,6 +34,7 @@ impl Config {
 pub struct ProvidersConfig {
     pub mailgun: Option<MailgunConfig>,
     pub mailjet: Option<MailjetConfig>,
+    pub telegram: Option<TelegramConfig>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -50,9 +51,14 @@ pub struct MailjetConfig {
     pub v31: bool,
 }
 
+#[derive(Debug, Deserialize, Clone)]
+pub struct TelegramConfig {
+    pub bot_token: String,
+}
+
 impl ProvidersConfig {
     pub fn is_empty(&self) -> bool {
-        self.mailgun.is_none() && self.mailjet.is_none()
+        self.mailgun.is_none() && self.mailjet.is_none() && self.telegram.is_none()
     }
 }
 #[cfg(test)]
@@ -93,6 +99,7 @@ mod tests {
         let providers_config = ProvidersConfig {
             mailgun: None,
             mailjet: None,
+            telegram: None,
         };
         assert!(providers_config.is_empty());
 
@@ -104,6 +111,7 @@ mod tests {
         let providers_config = ProvidersConfig {
             mailgun: Some(mailgun_config),
             mailjet: None,
+            telegram: None,
         };
         assert!(!providers_config.is_empty());
     }

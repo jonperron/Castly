@@ -15,7 +15,7 @@ use tracing_subscriber;
 
 use crate::api::{send_router, AppState};
 use crate::config::Config;
-use crate::providers::{MailgunProvider, MailjetProvider};
+use crate::providers::{MailgunProvider, MailjetProvider, TelegramProvider};
 use crate::templates_engines::tera_engine::TemplateEngine;
 use crate::tools::health_handler;
 
@@ -35,6 +35,7 @@ async fn main() {
             .expect("Failed to load template engine"),
     );
 
+    // Init providers
     if config.providers.is_empty() {
         panic!("No provider is configured, please check your config file");
     }
@@ -51,10 +52,17 @@ async fn main() {
         None
     };
 
+    let telegram_provider = if let Some(telegram_config) = &config.providers.telegram {
+        Some(Arc::new(TelegramProvider::new(telegram_config.clone())))
+    } else {
+        None
+    };
+
     let state = AppState {
         template_engine,
         mailgun_provider,
         mailjet_provider,
+        telegram_provider,
     };
 
     let app = send_router(state).merge(Router::new().route("/health", get(health_handler)));
