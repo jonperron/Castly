@@ -117,7 +117,7 @@ impl Provider for MailjetProvider {
     }
 
     fn name(&self) -> &'static str {
-        "mailjet"
+        "mail_mailjet"
     }
 
     fn supports_notification(&self, notification: &Notification) -> bool {

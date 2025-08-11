@@ -75,7 +75,7 @@ impl Provider for MailgunProvider {
     }
 
     fn name(&self) -> &'static str {
-        "mailgun"
+        "mail_mailgun"
     }
 
     fn supports_notification(&self, notification: &Notification) -> bool {

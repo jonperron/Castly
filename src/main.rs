@@ -2,7 +2,6 @@
 mod api;
 mod config;
 mod models;
-mod patterns;
 mod providers;
 mod services;
 mod templates_engines;
@@ -38,47 +37,38 @@ async fn main() {
             .expect("Failed to load template engine"),
     );
 
-    // Init providers using factory pattern
+    // Init providers using registry pattern
     if config.providers.is_empty() {
         panic!("No provider is configured, please check your config file");
     }
 
     let mut provider_registry = ProviderRegistry::new();
 
-    // Register providers using factory
+    // Register providers with consistent naming
     if let Some(provider) = ProviderFactory::create_mailgun_provider(&config.providers) {
-        provider_registry.register_provider("mailgun".to_string(), Arc::new(provider));
+        provider_registry.register_provider("mail_mailgun".to_string(), Arc::new(provider));
     }
     if let Some(provider) = ProviderFactory::create_mailjet_provider(&config.providers) {
-        provider_registry.register_provider("mailjet".to_string(), Arc::new(provider));
+        provider_registry.register_provider("mail_mailjet".to_string(), Arc::new(provider));
     }
     if let Some(provider) = ProviderFactory::create_telegram_provider(&config.providers) {
         provider_registry.register_provider("telegram".to_string(), Arc::new(provider));
     }
     if let Some(provider) = ProviderFactory::create_twilio_sms_provider(&config.providers) {
-        provider_registry.register_provider("twilio_sms".to_string(), Arc::new(provider));
+        provider_registry.register_provider("sms_twilio".to_string(), Arc::new(provider));
     }
     if let Some(provider) = ProviderFactory::create_twilio_email_provider(&config.providers) {
-        provider_registry.register_provider("twilio_email".to_string(), Arc::new(provider));
+        provider_registry.register_provider("mail_twilio".to_string(), Arc::new(provider));
     }
 
-    // Create notification service with dependency injection
+    // Create notification service
     let notification_service = Arc::new(NotificationService::new(
         Arc::new(provider_registry),
         template_engine.clone(),
     ));
 
-    // Legacy AppState for backward compatibility with existing handlers
     let state = AppState {
-        template_engine,
-        mailgun_provider: ProviderFactory::create_mailgun_provider(&config.providers).map(Arc::new),
-        mailjet_provider: ProviderFactory::create_mailjet_provider(&config.providers).map(Arc::new),
-        telegram_provider: ProviderFactory::create_telegram_provider(&config.providers)
-            .map(Arc::new),
-        twilio_sms_provider: ProviderFactory::create_twilio_sms_provider(&config.providers)
-            .map(Arc::new),
-        twilio_email_provider: ProviderFactory::create_twilio_email_provider(&config.providers)
-            .map(Arc::new),
+        notification_service,
     };
 
     let app = send_router(state).merge(Router::new().route("/health", get(health_handler)));

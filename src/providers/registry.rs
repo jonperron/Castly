@@ -28,11 +28,11 @@ impl ProviderRegistry {
         notification_type: &NotificationType,
     ) -> Result<&Arc<dyn Provider + Send + Sync>, ProviderError> {
         let provider_name = match notification_type {
-            NotificationType::MailMailgun => "mailgun",
-            NotificationType::MailMailjet => "mailjet",
-            NotificationType::MailTwilio => "twilio_email",
+            NotificationType::MailMailgun => "mail_mailgun",
+            NotificationType::MailMailjet => "mail_mailjet",
+            NotificationType::MailTwilio => "mail_twilio",
             NotificationType::Telegram => "telegram",
-            NotificationType::SmsTwilio => "twilio_sms",
+            NotificationType::SmsTwilio => "sms_twilio",
             NotificationType::Unknown => {
                 return Err(ProviderError::invalid_config("Unknown notification type"))
             }
@@ -98,14 +98,14 @@ mod tests {
         };
         let mailgun_provider = Arc::new(MailgunProvider::new(mailgun_config));
 
-        registry.register_provider("mailgun".to_string(), mailgun_provider);
+        registry.register_provider("mail_mailgun".to_string(), mailgun_provider);
 
-        assert!(registry.get_provider("mailgun").is_some());
+        assert!(registry.get_provider("mail_mailgun").is_some());
         assert!(registry.get_provider("nonexistent").is_none());
 
         let providers = registry.list_providers();
         assert_eq!(providers.len(), 1);
-        assert!(providers.contains(&&"mailgun".to_string()));
+        assert!(providers.contains(&&"mail_mailgun".to_string()));
     }
 
     #[test]
@@ -118,7 +118,7 @@ mod tests {
             base_url: None,
         };
         let mailgun_provider = Arc::new(MailgunProvider::new(mailgun_config));
-        registry.register_provider("mailgun".to_string(), mailgun_provider);
+        registry.register_provider("mail_mailgun".to_string(), mailgun_provider);
 
         let result = registry.get_provider_for_notification_type(&NotificationType::MailMailgun);
         assert!(result.is_ok());

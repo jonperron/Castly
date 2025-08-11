@@ -72,9 +72,8 @@ impl NotificationService {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::config::{MailgunConfig, TemplatesConfig};
-    use crate::models::NotificationRequestBuilder;
-    use crate::providers::{MailgunProvider, ProviderFactory};
+    use crate::config::MailgunConfig;
+    use crate::providers::MailgunProvider;
 
     #[tokio::test]
     async fn test_notification_service() {
@@ -86,7 +85,7 @@ mod tests {
             base_url: None,
         };
         let mailgun_provider = Arc::new(MailgunProvider::new(mailgun_config));
-        registry.register_provider("mailgun".to_string(), mailgun_provider);
+        registry.register_provider("mail_mailgun".to_string(), mailgun_provider);
 
         // For testing purposes, create a minimal template engine
         // In a real scenario, you would properly initialize with template files
@@ -101,6 +100,6 @@ mod tests {
 
         let providers = service.list_available_providers();
         assert_eq!(providers.len(), 1);
-        assert!(providers.contains(&&"mailgun".to_string()));
+        assert!(providers.contains(&&"mail_mailgun".to_string()));
     }
 }
