@@ -80,7 +80,7 @@ impl Provider for TwilioEmailProvider {
     }
 
     fn name(&self) -> &'static str {
-        "twilio_email"
+        "mail_twilio"
     }
 
     fn supports_notification(&self, notification: &Notification) -> bool {

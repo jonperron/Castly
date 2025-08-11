@@ -74,7 +74,7 @@ impl Provider for TwilioSmsProvider {
     }
 
     fn name(&self) -> &'static str {
-        "twilio_sms"
+        "sms_twilio"
     }
 
     fn supports_notification(&self, notification: &Notification) -> bool {
