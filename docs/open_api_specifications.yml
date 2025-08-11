@@ -29,7 +29,7 @@ paths:
                   example: "Hello, World!"
                 notification_type:
                   type: string
-                  enum: [mail_mailgun, mail_mailjet]
+                  enum: [mail_mailgun, mail_mailjet, mail_twilio, telegram, sms_twilio]
                   example: "mail_mailgun"
               required:
                 - to

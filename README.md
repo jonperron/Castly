@@ -27,7 +27,9 @@ Castly is a flexible service built in Rust for sending notifications via multipl
 | -------- | --------- | ---------------- |
 | Mailgun  | Email     | `mail_mailgun`   |
 | Mailjet  | Email     | `mail_mailjet`   |
+| Twilio   | Email     | `mail_twilio`    |
 | Telegram | Messaging | `telegram`       |
+| Twilio   | SMS       | `sms_twilio`     |
 
 ## API Example
 

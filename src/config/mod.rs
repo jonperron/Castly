@@ -35,6 +35,8 @@ pub struct ProvidersConfig {
     pub mailgun: Option<MailgunConfig>,
     pub mailjet: Option<MailjetConfig>,
     pub telegram: Option<TelegramConfig>,
+    pub twilio_sms: Option<TwilioSmsConfig>,
+    pub twilio_email: Option<TwilioEmailConfig>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -56,9 +58,24 @@ pub struct TelegramConfig {
     pub bot_token: String,
 }
 
+#[derive(Debug, Deserialize, Clone)]
+pub struct TwilioSmsConfig {
+    pub account_sid: String,
+    pub auth_token: String,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct TwilioEmailConfig {
+    pub api_key: String,
+}
+
 impl ProvidersConfig {
     pub fn is_empty(&self) -> bool {
-        self.mailgun.is_none() && self.mailjet.is_none() && self.telegram.is_none()
+        self.mailgun.is_none()
+            && self.mailjet.is_none()
+            && self.telegram.is_none()
+            && self.twilio_sms.is_none()
+            && self.twilio_email.is_none()
     }
 }
 #[cfg(test)]
@@ -100,6 +117,8 @@ mod tests {
             mailgun: None,
             mailjet: None,
             telegram: None,
+            twilio_sms: None,
+            twilio_email: None,
         };
         assert!(providers_config.is_empty());
 
@@ -112,6 +131,8 @@ mod tests {
             mailgun: Some(mailgun_config),
             mailjet: None,
             telegram: None,
+            twilio_sms: None,
+            twilio_email: None,
         };
         assert!(!providers_config.is_empty());
     }

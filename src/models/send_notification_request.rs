@@ -8,7 +8,9 @@ use crate::providers::errors::ProviderError;
 pub enum NotificationType {
     MailMailgun, // Mailgun for email notifications
     MailMailjet, // Mailjet for email notifications
+    MailTwilio,  // Twilio for email notifications
     Telegram,    // Telegram for messaging notifications
+    SmsTwilio,   // Twilio for SMS notifications
     #[serde(other)] // Handle unknown notification types
     Unknown,
 }
@@ -58,7 +60,9 @@ impl SendNotificationRequest {
         match self.notification_type {
             NotificationType::MailMailgun => Ok(()), // Accept mailgun for email notifications
             NotificationType::MailMailjet => Ok(()), // Accept mailjet for email notifications
+            NotificationType::MailTwilio => Ok(()),  // Accept twilio for email notifications
             NotificationType::Telegram => Ok(()),    // Accept telegram for messaging notifications
+            NotificationType::SmsTwilio => Ok(()),   // Accept twilio for SMS notifications
             _ => Err(ProviderError::invalid_config(
                 "Notification type is not supported".to_string(),
             )),

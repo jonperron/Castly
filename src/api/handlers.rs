@@ -9,10 +9,13 @@ use serde_json::json;
 use std::sync::Arc;
 
 use crate::{
-    api::helpers::{create_email_notifications, create_messaging_notifications},
+    api::helpers::{
+        create_email_notifications, create_messaging_notifications, create_sms_notifications,
+    },
     models::{Notification, NotificationType, SendNotificationRequest},
     providers::{
         errors::ProviderError, MailgunProvider, MailjetProvider, Provider, TelegramProvider,
+        TwilioEmailProvider, TwilioSmsProvider,
     },
     templates_engines::TemplateEngine,
 };
@@ -23,6 +26,8 @@ pub struct AppState {
     pub mailgun_provider: Option<Arc<MailgunProvider>>,
     pub mailjet_provider: Option<Arc<MailjetProvider>>,
     pub telegram_provider: Option<Arc<TelegramProvider>>,
+    pub twilio_sms_provider: Option<Arc<TwilioSmsProvider>>,
+    pub twilio_email_provider: Option<Arc<TwilioEmailProvider>>,
 }
 
 pub async fn send_notifications_with_provider<T: Provider>(
@@ -58,12 +63,15 @@ pub async fn send_notification(
 
     // Create notification regarding type
     let notifications = match request.notification_type {
-        NotificationType::MailMailgun | NotificationType::MailMailjet => {
+        NotificationType::MailMailgun
+        | NotificationType::MailMailjet
+        | NotificationType::MailTwilio => {
             create_email_notifications(&request, &state.template_engine)
         }
         NotificationType::Telegram => {
             create_messaging_notifications(&request, &state.template_engine)
         }
+        NotificationType::SmsTwilio => create_sms_notifications(&request, &state.template_engine),
         _ => Err(ProviderError::invalid_config(
             "Unsupported notification type",
         )),
@@ -96,8 +104,24 @@ pub async fn send_notification(
         NotificationType::MailMailjet => {
             handle_provider(state.mailjet_provider.clone(), "Mailjet", notifications).await
         }
+        NotificationType::MailTwilio => {
+            handle_provider(
+                state.twilio_email_provider.clone(),
+                "Twilio Email",
+                notifications,
+            )
+            .await
+        }
         NotificationType::Telegram => {
             handle_provider(state.telegram_provider.clone(), "Telegram", notifications).await
+        }
+        NotificationType::SmsTwilio => {
+            handle_provider(
+                state.twilio_sms_provider.clone(),
+                "Twilio SMS",
+                notifications,
+            )
+            .await
         }
         _ => Err(ProviderError::invalid_config("Unsupported provider")),
     };

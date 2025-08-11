@@ -15,9 +15,17 @@ pub struct MessageNotification {
     pub message: String,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+pub struct SMSNotification {
+    pub from: String,
+    pub to: String,
+    pub body: String,
+}
+
 pub enum Notification {
     Email(EmailNotification),
     Message(MessageNotification),
+    SMS(SMSNotification),
 }
 
 #[cfg(test)]
@@ -42,5 +50,22 @@ mod tests {
         let deserialized_email: EmailNotification =
             serde_json::from_str(&json).expect("Deserialization failed");
         assert_eq!(deserialized_email, email_notification);
+    }
+
+    #[test]
+    fn test_sms_notification_serialization() {
+        let sms_notification = SMSNotification {
+            from: "+1234567890".to_string(),
+            to: "+0987654321".to_string(),
+            body: "This is a test SMS".to_string(),
+        };
+
+        let json = serde_json::to_string(&sms_notification).expect("Serialization failed");
+        assert!(json.contains("+1234567890"));
+        assert!(json.contains("+0987654321"));
+
+        let deserialized_sms: SMSNotification =
+            serde_json::from_str(&json).expect("Deserialization failed");
+        assert_eq!(deserialized_sms, sms_notification);
     }
 }
