@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use reqwest::Client;
 use tracing::info;
 
@@ -61,6 +62,7 @@ impl TwilioSmsProvider {
     }
 }
 
+#[async_trait]
 impl Provider for TwilioSmsProvider {
     async fn send(&self, notification: Notification) -> Result<(), ProviderError> {
         match notification {
@@ -69,6 +71,24 @@ impl Provider for TwilioSmsProvider {
                 "Invalid notification type".to_string(),
             )),
         }
+    }
+
+    fn name(&self) -> &'static str {
+        "twilio_sms"
+    }
+
+    fn supports_notification(&self, notification: &Notification) -> bool {
+        matches!(notification, Notification::SMS(_))
+    }
+
+    async fn health_check(&self) -> Result<(), ProviderError> {
+        // Simple health check - verify configuration
+        if self.config.account_sid.is_empty() || self.config.auth_token.is_empty() {
+            return Err(ProviderError::invalid_config(
+                "Invalid Twilio SMS configuration",
+            ));
+        }
+        Ok(())
     }
 }
 
