@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use reqwest::Client;
 use tracing::info;
 
@@ -104,6 +105,7 @@ impl MailjetProvider {
     }
 }
 
+#[async_trait]
 impl Provider for MailjetProvider {
     async fn send(&self, notification: Notification) -> Result<(), ProviderError> {
         match notification {
@@ -112,5 +114,23 @@ impl Provider for MailjetProvider {
                 "Invalid notification type".to_string(),
             )),
         }
+    }
+
+    fn name(&self) -> &'static str {
+        "mailjet"
+    }
+
+    fn supports_notification(&self, notification: &Notification) -> bool {
+        matches!(notification, Notification::Email(_))
+    }
+
+    async fn health_check(&self) -> Result<(), ProviderError> {
+        // Simple health check - verify configuration
+        if self.config.api_key.is_empty() || self.config.api_secret.is_empty() {
+            return Err(ProviderError::invalid_config(
+                "Invalid Mailjet configuration",
+            ));
+        }
+        Ok(())
     }
 }

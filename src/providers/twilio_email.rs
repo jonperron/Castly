@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use reqwest::Client;
 use tracing::info;
 
@@ -67,6 +68,7 @@ impl TwilioEmailProvider {
     }
 }
 
+#[async_trait]
 impl Provider for TwilioEmailProvider {
     async fn send(&self, notification: Notification) -> Result<(), ProviderError> {
         match notification {
@@ -75,6 +77,24 @@ impl Provider for TwilioEmailProvider {
                 "Invalid notification type".to_string(),
             )),
         }
+    }
+
+    fn name(&self) -> &'static str {
+        "twilio_email"
+    }
+
+    fn supports_notification(&self, notification: &Notification) -> bool {
+        matches!(notification, Notification::Email(_))
+    }
+
+    async fn health_check(&self) -> Result<(), ProviderError> {
+        // Simple health check - verify configuration
+        if self.config.api_key.is_empty() {
+            return Err(ProviderError::invalid_config(
+                "Invalid Twilio Email configuration",
+            ));
+        }
+        Ok(())
     }
 }
 

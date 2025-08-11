@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use reqwest::Client;
 
 use crate::{
@@ -50,6 +51,7 @@ impl TelegramProvider {
     }
 }
 
+#[async_trait]
 impl Provider for TelegramProvider {
     async fn send(&self, notification: Notification) -> Result<(), ProviderError> {
         match notification {
@@ -57,6 +59,33 @@ impl Provider for TelegramProvider {
             _ => Err(ProviderError::UnexpectedError(
                 "Invalid notification type".to_string(),
             )),
+        }
+    }
+
+    fn name(&self) -> &'static str {
+        "telegram"
+    }
+
+    fn supports_notification(&self, notification: &Notification) -> bool {
+        matches!(notification, Notification::Message(_))
+    }
+
+    async fn health_check(&self) -> Result<(), ProviderError> {
+        // Health check by calling getMe API
+        let health_url = self.url.replace("sendMessage", "getMe");
+        let response = self
+            .client
+            .get(&health_url)
+            .send()
+            .await
+            .map_err(|e| ProviderError::NetworkError(e.to_string()))?;
+
+        if response.status().is_success() {
+            Ok(())
+        } else {
+            Err(ProviderError::ApiError(
+                "Telegram bot token invalid".to_string(),
+            ))
         }
     }
 }

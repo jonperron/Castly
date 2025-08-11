@@ -7,6 +7,9 @@ edition = "2021"
 # Error handling
 thiserror = "2.0"
 
+# Async traits
+async-trait = "0.1"
+
 # API
 axum = "0.8"
 serde = { version = "1.0", features = ["derive"] }

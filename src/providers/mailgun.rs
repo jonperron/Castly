@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use reqwest::Client;
 
 use crate::{
@@ -62,6 +63,7 @@ impl MailgunProvider {
     }
 }
 
+#[async_trait]
 impl Provider for MailgunProvider {
     async fn send(&self, notification: Notification) -> Result<(), ProviderError> {
         match notification {
@@ -70,5 +72,23 @@ impl Provider for MailgunProvider {
                 "Invalid notification type".to_string(),
             )),
         }
+    }
+
+    fn name(&self) -> &'static str {
+        "mailgun"
+    }
+
+    fn supports_notification(&self, notification: &Notification) -> bool {
+        matches!(notification, Notification::Email(_))
+    }
+
+    async fn health_check(&self) -> Result<(), ProviderError> {
+        // Simple health check - verify domain configuration
+        if self.config.domain.is_empty() || self.config.api_key.is_empty() {
+            return Err(ProviderError::invalid_config(
+                "Invalid Mailgun configuration",
+            ));
+        }
+        Ok(())
     }
 }

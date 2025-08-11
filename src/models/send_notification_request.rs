@@ -3,7 +3,7 @@ use serde_json::Value;
 
 use crate::providers::errors::ProviderError;
 
-#[derive(Debug, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Deserialize, Serialize, PartialEq, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum NotificationType {
     MailMailgun, // Mailgun for email notifications
