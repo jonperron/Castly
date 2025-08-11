@@ -10,3 +10,4 @@ providers:
   mailgun:
     api_key: "foo"
     domain: "bar"
+

@@ -15,7 +15,9 @@ use tracing_subscriber;
 
 use crate::api::{send_router, AppState};
 use crate::config::Config;
-use crate::providers::{MailgunProvider, MailjetProvider, TelegramProvider};
+use crate::providers::{
+    MailgunProvider, MailjetProvider, TelegramProvider, TwilioEmailProvider, TwilioSmsProvider,
+};
 use crate::templates_engines::tera_engine::TemplateEngine;
 use crate::tools::health_handler;
 
@@ -58,11 +60,27 @@ async fn main() {
         None
     };
 
+    let twilio_sms_provider = if let Some(twilio_sms_config) = &config.providers.twilio_sms {
+        Some(Arc::new(TwilioSmsProvider::new(twilio_sms_config.clone())))
+    } else {
+        None
+    };
+
+    let twilio_email_provider = if let Some(twilio_email_config) = &config.providers.twilio_email {
+        Some(Arc::new(TwilioEmailProvider::new(
+            twilio_email_config.clone(),
+        )))
+    } else {
+        None
+    };
+
     let state = AppState {
         template_engine,
         mailgun_provider,
         mailjet_provider,
         telegram_provider,
+        twilio_sms_provider,
+        twilio_email_provider,
     };
 
     let app = send_router(state).merge(Router::new().route("/health", get(health_handler)));

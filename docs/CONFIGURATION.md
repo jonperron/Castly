@@ -62,3 +62,33 @@ providers:
   telegram:
     bot_token: "my-bot:1234356ezds"
 ```
+
+### Twilio SMS
+
+The twilio_sms section configures the Twilio SMS service provider.
+
+* `account_sid` (required): The Account SID for authenticating with Twilio.
+* `auth_token` (required): The Auth Token for authenticating with Twilio.
+
+**Note**: The sender phone number is provided via the `from` field in the notification request.
+
+```yaml
+providers:
+  twilio_sms:
+    account_sid: "ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    auth_token: "your_auth_token_here"
+```
+
+### Twilio Email
+
+The twilio_email section configures the Twilio SendGrid Email service provider.
+
+* `api_key` (required): The API key for authenticating with Twilio SendGrid.
+
+**Note**: The sender email address is provided via the `from` field in the notification request.
+
+```yaml
+providers:
+  twilio_email:
+    api_key: "SG.your_api_key_here"
+```
