@@ -1,27 +1,41 @@
-# Castly
+# 📢 Castly
 
-Castly is a flexible service built in Rust for sending notifications via multiple providers. It supports both synchronous API calls and asynchronous message consumption, allowing seamless integration into modern architectures. The service is designed to be provider-agnostic, configurable, and extensible for various notification types.
+[![Build Status](https://img.shields.io/github/actions/workflow/status/your-org/castly/ci.yml?branch=main)](https://github.com/your-org/castly/actions)
 
-##  Features
+**Castly** is a flexible, provider-agnostic notification service built in Rust.  
+Send messages via email, SMS, or messaging apps using a single API—no matter the underlying provider.
 
-* Multi-Provider Support: Easily integrate providers like Mailgun, Mailjet, or others for email notifications. Future-proof for adding push notifications (e.g., Firebase).
-* Templated Notifications: Supports dynamic content generation using [Tera](https://keats.github.io/tera/docs/) for customizable templates.
-* Synchronous and Asynchronous Modes:
-  * Synchronous: Use the /send HTTP endpoint to send notifications via API.
-  * Asynchronous: TBA
-* Configurable via YAML. Support for k8s to be added
-* Health Checks: Includes a /health endpoint for monitoring and readiness probes.
-* Tracing and Observability: Built-in support for structured logging and distributed tracing using [tracing](https://github.com/tokio-rs/tracing).
+---
 
-## How It Works
+## ⚠️ Status
 
-* Configuration: Define provider settings, template paths, and notification preferences in a config.yaml file.
-* Templating: Use Tera templates for dynamic content generation. Templates can be organized by language or type (e.g., templates/hello_world.en.html).
-* Sending Notifications:
-  * API: Send a POST request to /send with the notification payload.
-* Extensibility: Add new providers by implementing the EmailProvider trait.
+> **Castly is under active development.**
+Expect breaking changes until the first stable release.
 
-## Supported providers
+---
+
+## 🚀 Key Features
+
+- **Multi-Provider Support**  
+  Integrate with providers like **Mailgun**, **Mailjet**, **Twilio**, and **Telegram** for email, SMS, or messaging.  
+  Future-ready for push notifications (e.g., Firebase).
+
+- **Templated Notifications**  
+  Dynamic, customizable templates powered by [Tera](https://keats.github.io/tera/docs/).
+
+- **Synchronous & Asynchronous Modes**  
+  - **Synchronous** – Send instantly via `/send` HTTP endpoint.  
+  - **Asynchronous** – (Coming soon) Consume messages from a queue.
+
+- **Configurable via YAML**  
+  Works out-of-the-box and adaptable for Kubernetes deployments.
+
+- **Observability Built-In**  
+  Health checks (`/health`), structured logging, and distributed tracing via [tracing](https://github.com/tokio-rs/tracing).
+
+---
+
+## 📦 Supported Providers
 
 | Name     | Type      | Value in request |
 | -------- | --------- | ---------------- |
@@ -31,15 +45,19 @@ Castly is a flexible service built in Rust for sending notifications via multipl
 | Telegram | Messaging | `telegram`       |
 | Twilio   | SMS       | `sms_twilio`     |
 
-## API Example
+---
 
-`/send` Endpoint
+## 🛠️ Usage
 
-Send a notification via API:
+**Send a Notification via API**
 
-* Request: POST /send
-* Headers: Content-Type: application/json
-* Body:
+**Endpoint**  
+`POST /send`
+
+**Headers**  
+`Content-Type: application/json`
+
+**Example Request**  
 
 ```json
 {
@@ -47,37 +65,7 @@ Send a notification via API:
   "from": "sender@example.com",
   "subject": "Hello, World!",
   "notification_type": "mail_mailgun",
-  "use_raw_text": {
+  "use_raw_text": {
     "text": "Hello world!"
   }
 }
-
-```
-
-Open API specifications are available [here](docs/open_api_specifications.yml).
-
-## Running the Service
-
-Build and run the service:
-
-```bash
-cargo run
-```
-
-Access the API on <http://localhost:3000>.
-
-## Configuration
-
-See [CONFIGURATION.md](docs/CONFIGURATION.md) for details. A dummy `config.yaml` file is provided as an example.
-
-## Monitoring
-
-Use the /health endpoint to monitor the service's status:
-
-```bash
-curl http://localhost:3000/health
-```
-
-## Contributing
-
-TBA
