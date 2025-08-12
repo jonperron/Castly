@@ -1,6 +1,6 @@
 # 📢 Castly
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/your-org/castly/ci.yml?branch=main)](https://github.com/your-org/castly/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/jonperron/castly/rust.yml?branch=main)](https://github.com/jonperron/castly/actions)
 
 **Castly** is a flexible, provider-agnostic notification service built in Rust.  
 Send messages via email, SMS, or messaging apps using a single API—no matter the underlying provider.
