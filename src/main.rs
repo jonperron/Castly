@@ -1,6 +1,7 @@
 // Declare modules part
 mod api;
 mod config;
+mod consumers;
 mod models;
 mod providers;
 mod services;
@@ -11,11 +12,13 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 
 use axum::{routing::get, Router};
+use tokio::task;
 use tracing::{info, Level};
 use tracing_subscriber;
 
 use crate::api::{send_router, AppState};
 use crate::config::Config;
+use crate::consumers::kafka::run_kafka_consumer;
 use crate::providers::{ProviderFactory, ProviderRegistry};
 use crate::services::NotificationService;
 use crate::templates_engines::tera_engine::TemplateEngine;
@@ -66,6 +69,20 @@ async fn main() {
         Arc::new(provider_registry),
         template_engine.clone(),
     ));
+
+    // Start Kafka consumer in a separate task if enabled
+    if let Some(kafka_config) = config.kafka.clone() {
+        let notification_service_for_kafka = notification_service.clone();
+        task::spawn(async move {
+            consumers::kafka::run_kafka_consumer(
+                &kafka_config.brokers,
+                &kafka_config.topic,
+                &kafka_config.group_id,
+                notification_service_for_kafka,
+            )
+            .await;
+        });
+    }
 
     let state = AppState {
         notification_service,

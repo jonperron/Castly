@@ -3,6 +3,13 @@ use serde_yaml;
 use std::fs;
 use std::path::Path;
 
+#[derive(Debug, Deserialize, Clone)]
+pub struct KafkaConfig {
+    pub brokers: String,
+    pub topic: String,
+    pub group_id: String,
+}
+
 #[derive(Debug, Deserialize)]
 pub struct ServiceConfig {
     pub name: String,
@@ -20,6 +27,7 @@ pub struct Config {
     pub service: ServiceConfig,
     pub templates: TemplatesConfig,
     pub providers: ProvidersConfig,
+    pub kafka: Option<KafkaConfig>,
 }
 
 impl Config {
