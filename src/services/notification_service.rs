@@ -58,12 +58,6 @@ impl NotificationService {
         Ok(())
     }
 
-    pub async fn health_check(
-        &self,
-    ) -> std::collections::HashMap<String, Result<(), ProviderError>> {
-        self.provider_registry.health_check_all().await
-    }
-
     pub fn list_available_providers(&self) -> Vec<&String> {
         self.provider_registry.list_providers()
     }
