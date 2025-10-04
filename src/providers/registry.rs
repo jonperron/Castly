@@ -84,8 +84,8 @@ impl Default for ProviderRegistry {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::config::{MailgunConfig, TelegramConfig};
-    use crate::providers::{MailgunProvider, TelegramProvider};
+    use crate::config::MailgunConfig;
+    use crate::providers::MailgunProvider;
 
     #[test]
     fn test_provider_registry() {
